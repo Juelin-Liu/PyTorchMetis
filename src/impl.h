@@ -122,11 +122,11 @@ torch::Tensor metis_assignment(int64_t num_partitions, torch::Tensor indptr, tor
     if (obj_cut) {
         std::cout << "Partition a graph with " << nvtxs << " nodes and "
                 << num_edge << " edges into " << num_partitions << " parts and "
-                << "get " << objval << " edge cuts";
+                << "get " << objval << " edge cuts" << std::endl;
     } else {
         std::cout << "Partition a graph with " << nvtxs << " nodes and "
                 << num_edge << " edges into " << num_partitions << " parts and "
-                << "the communication volume is " << objval;
+                << "the communication volume is " << objval << std::endl;
     }
 
     switch (flag) {
@@ -146,7 +146,7 @@ torch::Tensor metis_assignment(int64_t num_partitions, torch::Tensor indptr, tor
 torch::Tensor compact_indptr(torch::Tensor in_indptr, torch::Tensor flag) {
     int64_t v_num = in_indptr.size(0) - 1;
     int64_t e_num = flag.size(0);
-    std::cout << "ReindexCSR e_num before compact = " << e_num;
+    std::cout << "ReindexCSR e_num before compact = " << e_num << std::endl;
     auto _in_indices = flag.accessor<bool, 1>();
     auto _in_indptr = in_indptr.accessor<int64_t, 1>();
     std::vector<int64_t> degree(v_num + 1, 0);
@@ -168,7 +168,7 @@ torch::Tensor compact_indptr(torch::Tensor in_indptr, torch::Tensor flag) {
     auto out_indptr_start = static_cast<int64_t *>(ret.mutable_data_ptr());
     auto out_indptr_end = std::exclusive_scan(degree.begin(), degree.end(), out_indptr_start, 0ll);
     
-    std::cout << "ReindexCSR e_num after = " << out_indptr_start[v_num];
+    std::cout << "ReindexCSR e_num after = " << out_indptr_start[v_num] << std::endl;
     return ret;
 }
 
@@ -176,7 +176,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
   if (data.size(0) == 0) {
     int64_t e_num = in_indices.size(0);
     int64_t v_num = in_indptr.size(0) - 1;
-    std::cout << "MakeSym v_num: " << v_num << " | e_num: " << e_num;
+    std::cout << "MakeSym v_num: " << v_num << " | e_num: " << e_num << std::endl;
     typedef std::vector<Edge> EdgeVec;
     EdgeVec edge_vec;
     edge_vec.resize(e_num * 2);
@@ -196,7 +196,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
           }
         }
     });
-    std::cout << "MakeSym start sorting";
+    std::cout << "MakeSym start sorting" << std::endl;
     tbb::parallel_sort(edge_vec.begin(), edge_vec.end());
     edge_vec.erase(std::unique(edge_vec.begin(), edge_vec.end()), edge_vec.end());
     edge_vec.shrink_to_fit();
@@ -208,7 +208,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
     torch::Tensor indices = torch::empty(cur_e_num, tensor_opts);
     std::vector<std::atomic<int64_t>> degree(v_num + 1);
     auto indices_ptr = indices.accessor<int64_t, 1>();
-    std::cout << "MakeSym compute degree";
+    std::cout << "MakeSym compute degree" << std::endl;
 
     tbb::parallel_for( tbb::blocked_range<int64_t >(0, cur_e_num),
                       [&](tbb::blocked_range<int64_t > r)
@@ -221,10 +221,10 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
         }
     });
 
-    std::cout << "MakeSym compute indptr";
+    std::cout << "MakeSym compute indptr" << std::endl;
     auto out_start = static_cast<int64_t *>(indptr.mutable_data_ptr());
     auto out_end = std::exclusive_scan(degree.begin(), degree.end(), out_start, 0ll);
-    std::cout << "MakeSym e_num after convert " << cur_e_num;
+    std::cout << "MakeSym e_num after convert " << cur_e_num << std::endl;
 
     assert(out_start[v_num] == cur_e_num);
     return {indptr, indices, data};
@@ -232,7 +232,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
     assert(data.size(0) == in_indices.size(0));
       int64_t e_num = in_indices.size(0);
     int64_t v_num = in_indptr.size(0) - 1;
-    std::cout << "MakeSym v_num: " << v_num << " | e_num: " << e_num;
+    std::cout << "MakeSym v_num: " << v_num << " | e_num: " << e_num << std::endl;
     typedef std::vector<EdgeWithData> EdgeVec;
     EdgeVec edge_vec;
     edge_vec.resize(e_num * 2);
@@ -254,7 +254,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
           }
         }
     });
-    std::cout << "MakeSym start sorting";
+    std::cout << "MakeSym start sorting" << std::endl;
     tbb::parallel_sort(edge_vec.begin(), edge_vec.end());
     edge_vec.erase(std::unique(edge_vec.begin(), edge_vec.end()), edge_vec.end());
     edge_vec.shrink_to_fit();
@@ -269,7 +269,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
     std::vector<std::atomic<int64_t>> degree(v_num + 1);
     auto indices_ptr = indices.accessor<int64_t, 1>();
     auto retdata_ptr = retdata.accessor<int64_t, 1>();
-    std::cout << "MakeSym compute degree";
+    std::cout << "MakeSym compute degree" << std::endl;
 
     tbb::parallel_for( tbb::blocked_range<int64_t >(0, cur_e_num),
                       [&](tbb::blocked_range<int64_t > r)
@@ -283,10 +283,10 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> make_sym(torch::Tensor i
         }
     });
 
-    std::cout << "MakeSym compute indptr";
+    std::cout << "MakeSym compute indptr" << std::endl;
     auto out_start = static_cast<int64_t *>(indptr.mutable_data_ptr());
     auto out_end = std::exclusive_scan(degree.begin(), degree.end(), out_start, 0ll);
-    std::cout << "MakeSym e_num after convert " << cur_e_num;
+    std::cout << "MakeSym e_num after convert " << cur_e_num << std::endl;
 
     assert(out_start[v_num] == cur_e_num);
     return {indptr, indices, retdata};
