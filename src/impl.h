@@ -112,8 +112,8 @@ torch::Tensor metis_assignment(int64_t num_partitions, torch::Tensor indptr, tor
     options[METIS_OPTION_ONDISK] = 1;
     options[METIS_OPTION_NITER] = 1;
     options[METIS_OPTION_NIPARTS] = 1;
-    options[METIS_OPTION_DROPEDGES] = 1;
-    options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN | METIS_DBG_INFO | METIS_DBG_TIME;
+    options[METIS_OPTION_DROPEDGES] = edge_weight.size(0) == 0;
+    // options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN | METIS_DBG_INFO | METIS_DBG_TIME;
 
     int flag = METIS_PartGraphKway(&nvtxs, 
     &ncon, xadj, adjncy, vwgt,  NULL, ewgt, &nparts,
